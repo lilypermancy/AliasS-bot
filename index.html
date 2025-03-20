@@ -6,96 +6,87 @@
     <title>AliaSimona's AI Bot</title>
     <style>
         body {
-            display: flex;
-            margin: 0;
             font-family: Arial, sans-serif;
-        }
-        #sidebar {
-            width: 250px;
-            background: #f4f4f4;
-            padding: 20px;
-            height: 100vh;
-            overflow-y: auto;
-            border-right: 1px solid #ddd;
-        }
-        #chat-container {
-            flex-grow: 1;
+            text-align: center;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
-            width: 100%;
+            background-color: #f9f9f9;
         }
-        #chat-box {
-            width: 60%;
-            border: 1px solid #ddd;
+        #chat-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
             border-radius: 10px;
-            padding: 20px;
-            background: #fff;
-            min-height: 300px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        #messages {
+            text-align: left;
+            min-height: 200px;
+            max-height: 300px;
             overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fff;
         }
-        .message {
-            margin-bottom: 10px;
-        }
-        .user {
+        .user-message {
             color: black;
-            font-weight: bold;
         }
-        .bot {
+        .bot-message {
             color: green;
         }
-        .input-container {
+        .buttons {
             display: flex;
+            justify-content: space-between;
             margin-top: 10px;
         }
-        input {
-            flex-grow: 1;
+        input, button {
             padding: 10px;
-            border: 1px solid #ddd;
+            font-size: 16px;
+            border: none;
             border-radius: 5px;
         }
         button {
-            padding: 10px;
-            border: none;
-            background: blue;
-            color: white;
             cursor: pointer;
-            margin-left: 5px;
-            border-radius: 5px;
         }
-        button.reset {
-            background: red;
+        .send-btn {
+            background-color: blue;
+            color: white;
+        }
+        .reset-btn {
+            background-color: red;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <div id="sidebar">
-        <h3>Historique</h3>
-        <ul id="history"></ul>
-        <button class="reset" onclick="clearChat()">Nouveau Chat</button>
-    </div>
+    <h1>AliaSimona's AI Bot</h1>
     <div id="chat-container">
-        <h1>AliaSimona's AI Bot</h1>
-        <div id="chat-box"></div>
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Tapez votre message..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Envoyer</button>
+        <div id="messages"></div>
+        <input type="text" id="user-input" placeholder="Tapez votre message..." onkeypress="handleKeyPress(event)" />
+        <div class="buttons">
+            <button class="send-btn" onclick="sendMessage()">Envoyer</button>
+            <button class="reset-btn" onclick="resetChat()">Nouveau Chat</button>
         </div>
     </div>
-
+    <p>Ce modèle est une version bêta en cours de développement et apprentissage !</p>
+    
     <script>
-        const apiUrl = "https://aliasimona-bot-api.onrender.com/chat"; // Remplace par ton API
-
+        const apiUrl = "https://aliasimona-bot-api.onrender.com/chat";
+        const resetUrl = "https://aliasimona-bot-api.onrender.com/reset";
+        
         function sendMessage() {
             const userInputField = document.getElementById("user-input");
             const userInput = userInputField.value.trim();
             if (!userInput) return;
 
-            const chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += `<p class='message user'>Vous: ${userInput}</p>`;
-            userInputField.value = "";
+            const messagesDiv = document.getElementById("messages");
+            messagesDiv.innerHTML += `<p class='user-message'><strong>Vous:</strong> ${userInput}</p>`;
 
             fetch(apiUrl, {
                 method: "POST",
@@ -104,13 +95,13 @@
             })
             .then(response => response.json())
             .then(data => {
-                chatBox.innerHTML += `<p class='message bot'>Alia'S: ${data.response}</p>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-                saveToHistory(userInput, data.response);
+                messagesDiv.innerHTML += `<p class='bot-message'><strong>Alia'S:</strong> ${data.response}</p>`;
+                userInputField.value = "";
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             })
             .catch(error => {
                 console.error("Erreur:", error);
-                chatBox.innerHTML += `<p class='message bot' style='color:red;'>Erreur: Impossible d'obtenir une réponse.</p>`;
+                messagesDiv.innerHTML += `<p style='color:red;'><strong>Erreur :</strong> Impossible d'obtenir une réponse.</p>`;
             });
         }
 
@@ -120,16 +111,12 @@
             }
         }
 
-        function saveToHistory(userMsg, botMsg) {
-            const historyList = document.getElementById("history");
-            const listItem = document.createElement("li");
-            listItem.innerHTML = `<strong>Vous:</strong> ${userMsg} <br><strong>Alia'S:</strong> ${botMsg}`;
-            historyList.appendChild(listItem);
-        }
-
-        function clearChat() {
-            document.getElementById("chat-box").innerHTML = "";
-            document.getElementById("history").innerHTML = "";
+        function resetChat() {
+            fetch(resetUrl, { method: "POST" })
+            .then(() => {
+                document.getElementById("messages").innerHTML = "";
+            })
+            .catch(error => console.error("Erreur lors de la réinitialisation :", error));
         }
     </script>
 </body>
