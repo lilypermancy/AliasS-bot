@@ -7,32 +7,30 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f9f9f9;
+            margin: 0;
+            height: 100vh;
+        }
+        #sidebar {
+            width: 250px;
+            background: #f1f1f1;
+            padding: 20px;
+            overflow-y: auto;
         }
         #chat-container {
-            width: 90%;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         #messages {
-            text-align: left;
-            min-height: 200px;
-            max-height: 300px;
+            width: 80%;
+            height: 300px;
             overflow-y: auto;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             padding: 10px;
-            border-radius: 5px;
-            background-color: #fff;
+            margin-bottom: 10px;
         }
         .user-message {
             color: black;
@@ -40,54 +38,41 @@
         .bot-message {
             color: green;
         }
-        .buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-        }
-        input, button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-        }
         button {
+            margin: 5px;
+            padding: 10px;
             cursor: pointer;
-        }
-        .send-btn {
-            background-color: blue;
-            color: white;
-        }
-        .reset-btn {
-            background-color: red;
-            color: white;
         }
     </style>
 </head>
 <body>
-    <h1>AliaSimona's AI Bot</h1>
+    
+    <div id="sidebar">
+        <h3>Historique</h3>
+        <ul id="history"></ul>
+    </div>
+    
     <div id="chat-container">
+        <h1>AliaSimona's AI Bot</h1>
         <div id="messages"></div>
         <input type="text" id="user-input" placeholder="Tapez votre message..." onkeypress="handleKeyPress(event)" />
-        <div class="buttons">
-            <button class="send-btn" onclick="sendMessage()">Envoyer</button>
-            <button class="reset-btn" onclick="resetChat()">Nouveau Chat</button>
-        </div>
+        <button onclick="sendMessage()">Envoyer</button>
+        <button onclick="newChat()">Nouveau Chat</button>
     </div>
-    <p>Ce modèle est une version bêta en cours de développement et apprentissage !</p>
     
     <script>
         const apiUrl = "https://aliasimona-bot-api.onrender.com/chat";
-        const resetUrl = "https://aliasimona-bot-api.onrender.com/reset";
-        
+        let chatHistory = [];
+
         function sendMessage() {
             const userInputField = document.getElementById("user-input");
             const userInput = userInputField.value.trim();
             if (!userInput) return;
-
-            const messagesDiv = document.getElementById("messages");
-            messagesDiv.innerHTML += `<p class='user-message'><strong>Vous:</strong> ${userInput}</p>`;
-
+            
+            document.getElementById("messages").innerHTML += `<p class="user-message"><strong>Vous:</strong> ${userInput}</p>`;
+            chatHistory.push(userInput);
+            updateHistory();
+            
             fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -95,13 +80,12 @@
             })
             .then(response => response.json())
             .then(data => {
-                messagesDiv.innerHTML += `<p class='bot-message'><strong>Alia'S:</strong> ${data.response}</p>`;
+                document.getElementById("messages").innerHTML += `<p class="bot-message"><strong>Alia'S:</strong> ${data.response}</p>`;
                 userInputField.value = "";
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             })
             .catch(error => {
                 console.error("Erreur:", error);
-                messagesDiv.innerHTML += `<p style='color:red;'><strong>Erreur :</strong> Impossible d'obtenir une réponse.</p>`;
+                document.getElementById("messages").innerHTML += `<p style="color:red;"><strong>Erreur :</strong> Impossible d'obtenir une réponse.</p>`;
             });
         }
 
@@ -111,12 +95,22 @@
             }
         }
 
-        function resetChat() {
-            fetch(resetUrl, { method: "POST" })
-            .then(() => {
-                document.getElementById("messages").innerHTML = "";
-            })
-            .catch(error => console.error("Erreur lors de la réinitialisation :", error));
+        function newChat() {
+            document.getElementById("messages").innerHTML = "";
+            chatHistory = [];
+            updateHistory();
+        }
+
+        function updateHistory() {
+            const historyDiv = document.getElementById("history");
+            historyDiv.innerHTML = "";
+            chatHistory.forEach((msg, index) => {
+                if (index === 0) {
+                    let listItem = document.createElement("li");
+                    listItem.textContent = msg;
+                    historyDiv.appendChild(listItem);
+                }
+            });
         }
     </script>
 </body>
