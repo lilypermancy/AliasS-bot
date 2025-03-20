@@ -31,7 +31,6 @@
             border-radius: 5px;
             overflow-y: auto;
             max-height: 300px;
-            background: white;
         }
         .user-message {
             color: black;
@@ -39,24 +38,14 @@
         .bot-message {
             color: green;
         }
-        input {
+        input, button {
             padding: 10px;
             font-size: 16px;
-            width: 70%;
-            border: 1px solid #ccc;
-            border-radius: 5px;
         }
-        button {
-            padding: 10px;
-            font-size: 16px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: gray;
         }
     </style>
 </head>
@@ -70,6 +59,10 @@
         <button onclick="sendMessage()">Envoyer</button>
     </div>
 
+    <footer>
+        <p>Ce modèle est une version bêta encore en apprentissage !</p>
+    </footer>
+
     <script>
         const apiUrl = "https://aliasimona-bot-api.onrender.com/chat";  // Remplace par ton URL si besoin
 
@@ -82,9 +75,6 @@
             const messagesDiv = document.getElementById("messages");
             messagesDiv.innerHTML += `<p class="user-message"><strong>Vous:</strong> ${userInput}</p>`;
 
-            // Effacer immédiatement la barre de saisie
-            userInputField.value = "";
-
             // Envoyer la requête à l'API
             fetch(apiUrl, {
                 method: "POST",
@@ -95,12 +85,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                // Assurer que la réponse est concise
-                let botResponse = data.response;
-                botResponse = botResponse.replace(/^Alia'S:/, "").trim(); // Supprimer un éventuel préfixe
-
                 // Afficher la réponse du bot
-                messagesDiv.innerHTML += `<p class="bot-message"><strong>Alia'S:</strong> ${botResponse}</p>`;
+                messagesDiv.innerHTML += `<p class="bot-message"><strong>Alia'S:</strong> ${data.response}</p>`;
+                userInputField.value = ""; // Effacer le champ après envoi
                 messagesDiv.scrollTop = messagesDiv.scrollHeight; // Faire défiler vers le bas
             })
             .catch(error => {
